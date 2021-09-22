@@ -122,6 +122,23 @@ export class ApplicationService {
     return '';
   }
 
+  async abortApplication(applicationID: string) {
+    const application = await this.getApplicationOrFail(applicationID);
+    const lifecycle = application.lifecycle;
+    if (!lifecycle) {
+      throw new RelationshipNotFoundException(
+        `Unable to load Lifecycle for Application ${applicationID} `,
+        LogContext.COMMUNITY
+      );
+    }
+    const isFinalState = await this.lifecycleService.isFinalState(lifecycle);
+    if (isFinalState) {
+      // nothing to abort
+      return;
+    }
+    // Todo: Abort the lifecycle
+  }
+
   async findExistingApplication(
     userID: string,
     communityID: string

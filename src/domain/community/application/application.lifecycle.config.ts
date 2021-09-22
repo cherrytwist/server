@@ -1,5 +1,5 @@
 export const applicationLifecycleConfig = {
-  id: 'user-application',
+  id: 'user-application-2',
   context: {
     parentID: '',
   },
@@ -12,6 +12,11 @@ export const applicationLifecycleConfig = {
           cond: 'communityUpdateAuthorized',
         },
         REJECT: 'rejected',
+        ABORT: {
+          // Allows aborting of the application process e.g. if user is directly added
+          target: 'archived',
+          cond: 'communityUpdateAuthorized',
+        },
       },
     },
     approved: {
@@ -25,6 +30,11 @@ export const applicationLifecycleConfig = {
       on: {
         REOPEN: 'new',
         ARCHIVE: 'archived',
+        ABORT: {
+          // Allows aborting of the application process e.g. if user is directly added
+          target: 'archived',
+          cond: 'communityUpdateAuthorized',
+        },
       },
     },
     archived: {

@@ -62,6 +62,9 @@ export class CommunityLifecycleOptionsProvider {
   > = {
     actions: {
       communityAddMember: async (_, event: any) => {
+        // Note: THIS IS WRONG: it is not guaranteed that the authorization on application
+        // is the same as that on Community! A user is allowed to update / delete their own application
+        // which here implies they can approve their own application for membership!
         const application = await this.applicationService.getApplicationOrFail(
           event.parentID,
           {

@@ -214,6 +214,10 @@ export class CommunityService {
       resourceID: membershipCredential.resourceID,
     });
 
+    // Clear up any existing applications.
+    // Note: as there is a relationship between the business logic here + the business
+    // logic in the lifecycle definition, the two are not easily combined.
+
     // register the user for the community room(s)
     await this.communicationService.addUserToCommunityMessaging(
       community.communicationGroupID,
