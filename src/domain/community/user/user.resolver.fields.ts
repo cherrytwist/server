@@ -5,7 +5,7 @@ import { GraphqlGuard } from '@core/authorization';
 import { IAgent } from '@domain/agent/agent';
 import { IUser, User } from '@domain/community/user';
 import { UseGuards } from '@nestjs/common';
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Info, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { AuthorizationService } from '@core/authorization/authorization.service';
 import { UserService } from './user.service';
 import { DirectRoomResult } from './dto/user.dto.communication.room.direct.result';
@@ -14,6 +14,7 @@ import { IProfile } from '../profile/profile.interface';
 import { IPreference } from '@domain/common/preference/preference.interface';
 import { PreferenceSetService } from '@domain/common/preference-set/preference.set.service';
 import { AuthorizationPolicyService } from '@domain/common/authorization-policy/authorization.policy.service';
+import { GraphQLResolveInfo } from 'graphql';
 
 @Resolver(() => IUser)
 export class UserResolverFields {
@@ -47,7 +48,13 @@ export class UserResolverFields {
     description: 'The preferences for this user',
   })
   @Profiling.api
-  async preferences(@Parent() user: User): Promise<IPreference[]> {
+  async preferences(
+    @Parent() user: User,
+    @Info() info: GraphQLResolveInfo
+  ): Promise<IPreference[]> {
+    console.log(
+      JSON.parse(JSON.stringify(info.fieldNodes[0].selectionSet?.selections))
+    );
     const preferenceSet = await this.userService.getPreferenceSetOrFail(
       user.id
     );
