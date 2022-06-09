@@ -9,13 +9,14 @@ import { CredentialMetadataOutput } from '@domain/agent/verified-credential/dto/
 import { AuthorizationPolicyService } from '@domain/common/authorization-policy/authorization.policy.service';
 import { UUID_NAMEID_EMAIL } from '@domain/common/scalars';
 import { UseGuards } from '@nestjs/common';
-import { Args, Float, Query, Resolver } from '@nestjs/graphql';
+import { Args, Float, Info, Query, Resolver } from '@nestjs/graphql';
 import { Profiling } from '@src/common/decorators';
 import { AgentInfo } from '@src/core/authentication/agent-info';
 import { PaginationArgs, PaginatedUsers } from '@core/pagination';
 import { UserService } from './user.service';
 import { IUser } from './';
 import { UserFilterInput } from '@core/filtering';
+import { GraphQLResolveInfo } from 'graphql';
 
 @Resolver(() => IUser)
 export class UserResolverQueries {
@@ -89,8 +90,12 @@ export class UserResolverQueries {
   @Profiling.api
   async user(
     @CurrentUser() agentInfo: AgentInfo,
+    @Info() info: GraphQLResolveInfo,
     @Args('ID', { type: () => UUID_NAMEID_EMAIL }) id: string
   ): Promise<IUser> {
+    console.log(
+      JSON.parse(JSON.stringify(info.fieldNodes[0].selectionSet?.selections))
+    );
     await this.authorizationService.grantAccessOrFail(
       agentInfo,
       this.authorizationPolicyService.getPlatformAuthorizationPolicy(),
