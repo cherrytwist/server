@@ -16,7 +16,7 @@ import { PaginationArgs, PaginatedUsers } from '@core/pagination';
 import { UserService } from './user.service';
 import { IUser } from './';
 import { UserFilterInput } from '@core/filtering';
-import { GraphQLResolveInfo } from 'graphql';
+import { ResolveInfoPipe, SimpleFieldResolveType } from '@common/pipes';
 
 @Resolver(() => IUser)
 export class UserResolverQueries {
@@ -90,19 +90,16 @@ export class UserResolverQueries {
   @Profiling.api
   async user(
     @CurrentUser() agentInfo: AgentInfo,
-    @Info() info: GraphQLResolveInfo,
+    @Info(ResolveInfoPipe) info: SimpleFieldResolveType,
     @Args('ID', { type: () => UUID_NAMEID_EMAIL }) id: string
   ): Promise<IUser> {
-    console.log(
-      JSON.parse(JSON.stringify(info.fieldNodes[0].selectionSet?.selections))
-    );
     await this.authorizationService.grantAccessOrFail(
       agentInfo,
       this.authorizationPolicyService.getPlatformAuthorizationPolicy(),
       AuthorizationPrivilege.READ_USERS,
       `user query: ${agentInfo.email}`
     );
-    return await this.userService.getUserOrFail(id);
+    return await this.userService.getUserOrFail2(id, info);
   }
 
   @UseGuards(GraphqlGuard)

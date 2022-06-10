@@ -52,6 +52,7 @@ import { IPaginatedType } from '@core/pagination/paginated.type';
 import { LocationService } from '@domain/common/location/location.service';
 import { CreateProfileInput } from '../profile/dto/profile.dto.create';
 import { validateEmail } from '@common/utils';
+import { SimpleFieldResolveType } from '@src/common';
 
 @Injectable()
 export class UserService {
@@ -326,6 +327,30 @@ export class UserService {
     }
 
     return user.preferenceSet;
+  }
+
+  public async getUserOrFail2(
+    userID: string,
+    resolvedFields: SimpleFieldResolveType
+  ): Promise<IUser> | never {
+    const primitiveResolvedFields = Object.keys(resolvedFields).filter(
+      x => resolvedFields[x]
+    );
+    let whereClause;
+
+    if (validateEmail(userID)) {
+      whereClause = { email: userID };
+    } else if (userID.length === UUID_LENGTH) {
+      whereClause = { id: userID };
+    } else {
+      whereClause = { nameID: userID };
+    }
+
+    return this.userRepository
+      .createQueryBuilder()
+      .select(primitiveResolvedFields)
+      .where(whereClause)
+      .getOneOrFail();
   }
 
   async getUserOrFail(
