@@ -1,20 +1,14 @@
+import { GraphQLResolveInfo } from 'graphql';
 import { Injectable, PipeTransform } from '@nestjs/common';
 import { fieldsMap } from 'graphql-fields-list';
 
-/** key, value pair: <field name, is primitive> */
-export type SimpleFieldResolveType = Record<string, boolean>;
-
 @Injectable()
+/** Transforms {@link GraphQLResolveInfo} to string array of primitive fields.
+ * Primitive fields are plain values like string, number, etc. e.g not objects */
 export class ResolveInfoPipe implements PipeTransform {
-  transform(value: any): Record<string, boolean> {
+  transform(value: GraphQLResolveInfo): string[] {
     const mapResult = fieldsMap(value);
 
-    return Object.keys(mapResult).reduce<Record<string, boolean>>(
-      (acc, key) => ({
-        ...acc,
-        [key]: typeof mapResult[key] !== 'object',
-      }),
-      {}
-    );
+    return Object.keys(mapResult).filter(key => !mapResult[key]);
   }
 }

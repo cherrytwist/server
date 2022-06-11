@@ -15,6 +15,7 @@ import { IPreference } from '@domain/common/preference/preference.interface';
 import { PreferenceSetService } from '@domain/common/preference-set/preference.set.service';
 import { AuthorizationPolicyService } from '@domain/common/authorization-policy/authorization.policy.service';
 import { GraphQLResolveInfo } from 'graphql';
+import { ResolveInfoPipe } from '@src/common';
 
 @Resolver(() => IUser)
 export class UserResolverFields {
@@ -30,8 +31,12 @@ export class UserResolverFields {
     description: 'The Profile for this User.',
   })
   @Profiling.api
-  async profile(@Parent() user: User): Promise<IProfile> {
-    return await this.userService.getProfile(user);
+  async profile(
+    @Parent() user: User,
+    @Info(ResolveInfoPipe) fields: string[]
+  ): Promise<IProfile> {
+    return await this.userService.getProfile2(user.id, fields);
+    // return await this.userService.getProfile(user);
   }
 
   @ResolveField('agent', () => IAgent, {
@@ -91,9 +96,7 @@ export class UserResolverFields {
     @Parent() user: User,
     @CurrentUser() agentInfo: AgentInfo
   ): Promise<string> {
-    if (
-      await this.isAccessGranted(user, agentInfo, AuthorizationPrivilege.READ)
-    ) {
+    if (await this.isAccessGranted(agentInfo, AuthorizationPrivilege.READ)) {
       return user.email;
     }
     return 'not accessible';
@@ -109,24 +112,24 @@ export class UserResolverFields {
     @Parent() user: User,
     @CurrentUser() agentInfo: AgentInfo
   ): Promise<string> {
-    if (
-      await this.isAccessGranted(user, agentInfo, AuthorizationPrivilege.READ)
-    ) {
+    if (await this.isAccessGranted(agentInfo, AuthorizationPrivilege.READ)) {
       return user.phone;
     }
     return 'not accessible';
   }
 
   private async isAccessGranted(
-    user: IUser,
     agentInfo: AgentInfo,
     privilege: AuthorizationPrivilege
   ) {
     // needs to be loaded if you are not going through the orm layer
     // e.g. pagination is going around the orm layer
-    const { authorization } = await this.userService.getUserOrFail(user.id, {
+    /*const { authorization } = await this.userService.getUserOrFail(user.id, {
       relations: ['authorization'],
-    });
+    });*/
+    const authorization = await this.userService.getAuthorizationOrFail(
+      agentInfo.userID
+    );
     return await this.authorizationService.isAccessGranted(
       agentInfo,
       authorization,

@@ -12,7 +12,10 @@ import { AgentInfo } from '@core/authentication/agent-info';
 import { IAgent } from '@domain/agent/agent';
 import { AgentService } from '@domain/agent/agent/agent.service';
 import { CredentialsSearchInput, ICredential } from '@domain/agent/credential';
-import { AuthorizationPolicy } from '@domain/common/authorization-policy';
+import {
+  AuthorizationPolicy,
+  IAuthorizationPolicy,
+} from '@domain/common/authorization-policy';
 import { AuthorizationPolicyService } from '@domain/common/authorization-policy/authorization.policy.service';
 import { CommunicationRoomResult } from '@domain/communication/room/dto/communication.dto.room.result';
 import { RoomService } from '@domain/communication/room/room.service';
@@ -52,7 +55,6 @@ import { IPaginatedType } from '@core/pagination/paginated.type';
 import { LocationService } from '@domain/common/location/location.service';
 import { CreateProfileInput } from '../profile/dto/profile.dto.create';
 import { validateEmail } from '@common/utils';
-import { SimpleFieldResolveType } from '@src/common';
 
 @Injectable()
 export class UserService {
@@ -331,11 +333,8 @@ export class UserService {
 
   public async getUserOrFail2(
     userID: string,
-    resolvedFields: SimpleFieldResolveType
+    fields: string[]
   ): Promise<IUser> | never {
-    const primitiveResolvedFields = Object.keys(resolvedFields).filter(
-      x => resolvedFields[x]
-    );
     let whereClause;
 
     if (validateEmail(userID)) {
@@ -348,9 +347,19 @@ export class UserService {
 
     return this.userRepository
       .createQueryBuilder()
-      .select(primitiveResolvedFields)
+      .select(fields)
       .where(whereClause)
-      .getOneOrFail();
+      .getRawOne<IUser>()
+      .then(user => {
+        if (!user) {
+          throw new EntityNotFoundException(
+            `User not found with id: ${userID}`,
+            LogContext.COMMUNITY
+          );
+        }
+
+        return user;
+      });
   }
 
   async getUserOrFail(
@@ -598,6 +607,30 @@ export class UserService {
     return profile;
   }
 
+  async getProfile2(
+    userID: string,
+    fields: string[]
+  ): Promise<IProfile> | never {
+    fields = fields.map(x => `profile.${x} as ${x}`);
+    return this.userRepository
+      .createQueryBuilder('user')
+      .select('user.profileId', 'userProfileId')
+      .leftJoin('user.profile', 'profile')
+      .addSelect(fields)
+      .where('user.id = :userId', { userId: userID })
+      .getRawOne<IProfile>()
+      .then(profile => {
+        if (!profile) {
+          throw new EntityNotFoundException(
+            `Unable to load Profile for User: ${userID}`,
+            LogContext.COMMUNITY
+          );
+        }
+
+        return profile;
+      });
+  }
+
   async usersWithCredentials(
     credentialCriteria: CredentialsSearchInput
   ): Promise<IUser[]> {
@@ -665,6 +698,31 @@ export class UserService {
 
   async getUserCount(): Promise<number> {
     return await this.userRepository.count({ serviceProfile: false });
+  }
+
+  async getAuthorizationOrFail(userID: string): Promise<IAuthorizationPolicy> {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .select('user.authorizationId', 'authorizationId')
+      .leftJoin('user.authorization', 'authorization')
+      .addSelect([
+        'authorization.anonymousReadAccess as anonymousReadAccess',
+        'authorization.credentialRules as credentialRules',
+        'authorization.verifiedCredentialRules as verifiedCredentialRules',
+        'authorization.privilegeRules as privilegeRules',
+      ])
+      .where('user.id = :userId', { userId: userID })
+      .getRawOne<IAuthorizationPolicy>()
+      .then(auth => {
+        if (!auth) {
+          throw new EntityNotFoundException(
+            `Authorization not found for user: ${userID}`,
+            LogContext.COMMUNITY
+          );
+        }
+
+        return auth;
+      });
   }
 
   private async tryRegisterUserCommunication(
