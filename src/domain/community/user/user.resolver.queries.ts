@@ -99,8 +99,8 @@ export class UserResolverQueries {
       AuthorizationPrivilege.READ_USERS,
       `user query: ${agentInfo.email}`
     );
-    return this.userService.getUserOrFail2(id, fields);
-    //return this.userService.getUserOrFail(id);
+    return this.userService.getUserOrFail(id);
+    //return this.userService.getUserOrFail2(id, fields);
   }
 
   @UseGuards(GraphqlGuard)

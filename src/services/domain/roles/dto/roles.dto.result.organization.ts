@@ -9,12 +9,15 @@ export class RolesResultOrganization extends RolesResult {
   })
   organizationID: string;
 
-  constructor(organization: IOrganization, contributorID: string) {
-    super(
-      organization.nameID,
-      `${contributorID}/${organization.id}`,
-      organization.displayName
-    );
+  @Field(() => [RolesResult], {
+    description:
+      'Details of the Groups in the Organizations the user is a member of',
+  })
+  userGroups: RolesResult[];
+
+  constructor(organization: IOrganization) {
+    super(organization.nameID, organization.id, organization.displayName);
     this.organizationID = organization.id;
+    this.userGroups = [];
   }
 }

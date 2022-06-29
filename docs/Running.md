@@ -8,16 +8,16 @@ To simplify setting up the Server development environment, a pre-configured dock
 
 - Docker and docker-compose installed on x86 architecture (so not an ARM-based architecture like Raspberry pi or MacBook with M1 processor)
 - ports available on localhost:
-   - 4000 (alkemio server),
-   - 3306 (MySQL database)
-   - 8888 (traefik dashobard)
-   - 3000 (alkemio client)
-   - 8008 (synapse server)
-   - 5001 (ipfs server)
-   - 4436 (mailslurper UI)
-   - 4437 (mailslurper API)
-   - 5672 (rabbitMQ amqp)
-   - 15672 (rabbitMQ management UI)
+  - 4000 (alkemio server),
+  - 3306 (MySQL database)
+  - 8888 (traefik dashobard)
+  - 3000 (alkemio client)
+  - 8008 (synapse server)
+  - 5001 (ipfs server)
+  - 4436 (mailslurper UI)
+  - 4437 (mailslurper API)
+  - 5672 (rabbitMQ amqp)
+  - 15672 (rabbitMQ management UI)
 - Register an alkemio profile for notifications and configure it via SERVICE_ACCOUNT_USERNAME & SERVICE_ACCOUNT_PASSWORD env variables in .env.docker. The profile needs to be Global Community Admin.
 
 ## Steps:
@@ -33,12 +33,6 @@ npm run start:services
 ```bash
 npm start
 ```
-
-**Note**: If a container (e.g. Synapse) writes to a directory that is mapped locally, you will need to have enough permissions to write there.
-E.g. on Linux you can grant permissions the following way:
-
-- Navigate to the directory, e.g. .build/synapse
-- Change the permissions with `chmod o+w .`
 
 3. Validate that the server is running by visiting the [graphql endpoint](http://localhost:3000/graphql).
 

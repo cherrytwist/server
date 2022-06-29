@@ -1,9 +1,9 @@
 import { IHub } from '@domain/challenge/hub/hub.interface';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { RolesResult as RolesResult } from './roles.dto.result';
+import { RolesResultCommunity } from './roles.dto.result.community';
 
 @ObjectType()
-export class RolesResultHub extends RolesResult {
+export class RolesResultHub extends RolesResultCommunity {
   @Field(() => String, {
     description: 'The Hub ID',
   })
@@ -11,18 +11,18 @@ export class RolesResultHub extends RolesResult {
 
   hub: IHub;
 
-  @Field(() => [RolesResult], {
+  @Field(() => [RolesResultCommunity], {
     description: 'Details of the Challenges the user is a member of',
   })
-  challenges: RolesResult[] = [];
+  challenges: RolesResultCommunity[] = [];
 
-  @Field(() => [RolesResult], {
+  @Field(() => [RolesResultCommunity], {
     description: 'Details of the Opportunities the Contributor is a member of',
   })
-  opportunities: RolesResult[] = [];
+  opportunities: RolesResultCommunity[] = [];
 
-  constructor(hub: IHub, contributorID: string) {
-    super(hub.nameID, `${contributorID}/${hub.id}`, hub.displayName);
+  constructor(hub: IHub) {
+    super(hub.nameID, hub.id, hub.displayName);
     this.hubID = hub.id;
     this.hub = hub;
   }
