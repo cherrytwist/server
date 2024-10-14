@@ -9,19 +9,19 @@ import { Request, Response, NextFunction } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AuthenticationService } from '@core/authentication/authentication.service';
 import { LogContext } from '@src/common/enums';
-import { getSessionFromJwt } from '@common/utils';
-import { Configuration, FrontendApi, Session } from '@ory/kratos-client';
+import { Session } from '@ory/kratos-client';
 import { AlkemioConfig } from '@src/types';
+import { KratosService } from '@services/infrastructure/kratos/kratos.service';
 
 @Injectable()
 export class SessionExtendMiddleware implements NestMiddleware {
   private readonly SESSION_COOKIE_NAME: string;
   private readonly enabled: boolean;
-  private readonly kratosClient: FrontendApi;
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
     private readonly authService: AuthenticationService,
+    private readonly kratosService: KratosService,
     private readonly configService: ConfigService<AlkemioConfig, true>
   ) {
     this.SESSION_COOKIE_NAME = this.configService.get(
@@ -32,17 +32,6 @@ export class SessionExtendMiddleware implements NestMiddleware {
     this.enabled = this.configService.get(
       'identity.authentication.providers.ory.session_extend_enabled',
       { infer: true }
-    );
-
-    const kratosPublicBaseUrl = this.configService.get(
-      'identity.authentication.providers.ory.kratos_public_base_url_server',
-      { infer: true }
-    );
-
-    this.kratosClient = new FrontendApi(
-      new Configuration({
-        basePath: kratosPublicBaseUrl,
-      })
     );
   }
 
@@ -62,7 +51,7 @@ export class SessionExtendMiddleware implements NestMiddleware {
 
     let session: Session;
     try {
-      session = getSessionFromJwt(authorization);
+      session = this.kratosService.getSessionFromJwt(authorization);
     } catch (e: any) {
       this.logger.verbose?.(
         `Error while extracting ory session: ${e?.message}`,
@@ -99,9 +88,9 @@ export class SessionExtendMiddleware implements NestMiddleware {
        * In that case we may want to set a special header (e.g. X-Session-Extended) to indicate that the session is extended,
        * that in turns will trigger the client to call /sessions/whoami.
        */
-      const { headers } = await this.kratosClient.toSession({
-        cookie: req.headers.cookie,
-      });
+      const { headers } = await this.kratosService.getHeadersFromCookie(
+        req.headers.cookie
+      );
 
       res.header('Set-Cookie', headers['set-cookie']);
 

@@ -9,7 +9,6 @@ export * from './stringify.util';
 export * from './async.filter';
 export * from './base64.to.buffer';
 export * from './array.random.element';
-export * from './get.session';
 export * from './calculate.buffer.hash';
 export * from './untildify';
 export * from './path.resolve';

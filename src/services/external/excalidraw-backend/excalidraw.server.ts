@@ -1,7 +1,6 @@
 import { setInterval } from 'timers';
 import { debounce } from 'lodash';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Configuration, FrontendApi } from '@ory/kratos-client';
 import {
   Inject,
   Injectable,
@@ -25,7 +24,6 @@ import {
   serverBroadcastEventHandler,
   authorizeWithRoomAndJoinHandler,
   serverVolatileBroadcastEventHandler,
-  checkSessionHandler,
   idleStateEventHandler,
 } from './utils';
 import {
@@ -48,12 +46,6 @@ import { RemoteSocketIoSocket, SocketIoSocket } from './types/socket.io.socket';
 import { SocketIoServer } from './types/socket.io.server';
 import { CREATE_ROOM, DELETE_ROOM } from './adapters/adapter.event.names';
 import {
-  attachSessionMiddleware,
-  attachAgentMiddleware,
-  checkSessionMiddleware,
-  socketDataInitMiddleware,
-} from './middlewares';
-import {
   defaultCollaboratorModeTimeout,
   defaultContributionInterval,
   defaultSaveInterval,
@@ -63,6 +55,8 @@ import {
 } from './types/defaults';
 import { SaveResponse } from './types/save.reponse';
 import { AlkemioConfig } from '@src/types';
+import { ExcalidrawMiddlewareService } from './middlewares/excalidraw.middleware.service';
+import { KratosService } from '@services/infrastructure/kratos/kratos.service';
 
 type SaveMessageOpts = { timeout: number };
 type RoomTimers = Map<string, NodeJS.Timeout>;
@@ -90,7 +84,9 @@ export class ExcalidrawServer {
     private whiteboardService: WhiteboardService,
     private contributionReporter: ContributionReporterService,
     private communityResolver: CommunityResolverService,
-    private activityAdapter: ActivityAdapter
+    private activityAdapter: ActivityAdapter,
+    private excalidrawMiddlewareService: ExcalidrawMiddlewareService,
+    private kratosService: KratosService
   ) {
     const {
       contribution_window,
@@ -126,17 +122,6 @@ export class ExcalidrawServer {
   }
 
   private async init() {
-    const kratosPublicBaseUrl = this.configService.get(
-      'identity.authentication.providers.ory.kratos_public_base_url_server',
-      { infer: true }
-    );
-
-    const kratosClient = new FrontendApi(
-      new Configuration({
-        basePath: kratosPublicBaseUrl,
-      })
-    );
-
     const adapter = this.wsServer.of('/').adapter;
     adapter.on(CREATE_ROOM, async (roomId: string) => {
       if (!isRoomId(roomId)) {
@@ -208,10 +193,17 @@ export class ExcalidrawServer {
     });
 
     // middlewares
-    this.wsServer.use(socketDataInitMiddleware);
-    this.wsServer.use(attachSessionMiddleware(kratosClient));
     this.wsServer.use(
-      attachAgentMiddleware(kratosClient, this.logger, this.authService)
+      this.excalidrawMiddlewareService.socketDataInitMiddleware
+    );
+    this.wsServer.use(
+      this.excalidrawMiddlewareService.attachSessionMiddleware()
+    );
+    this.wsServer.use(
+      this.excalidrawMiddlewareService.attachAgentMiddleware(
+        this.logger,
+        this.authService
+      )
     );
     // cluster communication
     this.wsServer.on(
@@ -275,8 +267,10 @@ export class ExcalidrawServer {
       });
       // attach session handlers
       // drop connection on invalid or expired session
-      socket.prependAny(() => checkSessionHandler(socket));
-      socket.use((_, next) => checkSessionMiddleware(socket, next));
+      socket.prependAny(() => this.checkSessionHandler(socket));
+      socket.use((_, next) =>
+        this.excalidrawMiddlewareService.checkSessionMiddleware(socket, next)
+      );
       // attach error handlers
       socket.on('error', err => {
         if (!err) {
@@ -315,6 +309,19 @@ export class ExcalidrawServer {
         this.deleteCollaboratorModeTimerForSocket(socket.id);
       });
     });
+  }
+
+  private checkSessionHandler(socket: SocketIoSocket) {
+    if (socket.disconnected) {
+      return;
+    }
+
+    const { session } = socket.data;
+    const result = this.kratosService.checkSession(session);
+
+    if (result) {
+      closeConnection(socket, result);
+    }
   }
 
   private startContributionEventTimer(roomId: string) {

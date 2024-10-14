@@ -16,7 +16,6 @@ import {
 } from '../types/event.names';
 import { minCollaboratorsInRoom } from '../types/defaults';
 import { canUserRead, canUserUpdate, closeConnection } from './util';
-import { checkSession } from './check.session';
 
 const fetchSocketsSafe = async (
   wsServer: SocketIoServer,
@@ -195,19 +194,6 @@ export const disconnectingEventHandler = async (
 export const disconnectEventHandler = async (socket: SocketIoSocket) => {
   socket.removeAllListeners();
   socket.disconnect(true);
-};
-
-export const checkSessionHandler = (socket: SocketIoSocket) => {
-  if (socket.disconnected) {
-    return;
-  }
-
-  const { session } = socket.data;
-  const result = checkSession(session);
-
-  if (result) {
-    closeConnection(socket, result);
-  }
 };
 
 const calculateReasonForCollaborationMode = (

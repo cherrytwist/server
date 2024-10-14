@@ -8,6 +8,8 @@ import { EntityResolverModule } from '@services/infrastructure/entity-resolver/e
 import { ExcalidrawRedisServerFactoryProvider } from './adapters/redis';
 import { ExcalidrawServer } from './excalidraw.server';
 import { ActivityAdapterModule } from '@services/adapters/activity-adapter/activity.adapter.module';
+import { KratosModule } from '@services/infrastructure/kratos/kratos.module';
+import { ExcalidrawMiddlewareService } from './middlewares/excalidraw.middleware.service';
 
 @Module({
   imports: [
@@ -17,11 +19,14 @@ import { ActivityAdapterModule } from '@services/adapters/activity-adapter/activ
     ContributionReporterModule,
     EntityResolverModule,
     ActivityAdapterModule,
+    KratosModule,
   ],
   providers: [
     ExcalidrawRedisServerFactoryProvider,
     APP_ID_PROVIDER,
     ExcalidrawServer,
+    ExcalidrawMiddlewareService,
   ],
+  exports: [ExcalidrawMiddlewareService],
 })
 export class ExcalidrawServerModule {}
