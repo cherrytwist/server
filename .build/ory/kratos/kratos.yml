@@ -45,6 +45,16 @@ selfservice:
             scope:
               - profile
               - email
+          - id: surfconext
+            provider: generic
+            client_id: "YOUR_CLIENT_ID"
+            client_secret: "YOUR_CLIENT_SECRET"
+            mapper_url: file:///etc/config/kratos/oidc/oidc.surfconnext.jsonnet
+            issuer_url: "https://surfconext.nl/oauth2/"
+            scope:
+              - openid
+              - profile
+              - email
 
   flows:
     error:
