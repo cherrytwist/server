@@ -339,7 +339,7 @@ export class StorageBucketService {
     return readableDocuments;
   }
 
-  private hasAgentAccessToDocument(
+  public hasAgentAccessToDocument(
     document: IDocument,
     agentInfo: AgentInfo
   ): boolean {

@@ -33,9 +33,9 @@ import { AuthorizationPolicyType } from '@common/enums/authorization.policy.type
 import { CreateVisualOnProfileInput } from './dto/profile.dto.create.visual';
 import { DocumentService } from '@domain/storage/document/document.service';
 import { BaseException } from '@common/exceptions/base.exception';
-import { DocumentAuthorizationService } from '@domain/storage/document/document.service.authorization';
 import { CreateReferenceInput } from '../reference';
 import { IStorageBucket } from '@domain/storage/storage-bucket/storage.bucket.interface';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class ProfileService {
@@ -47,7 +47,6 @@ export class ProfileService {
     private referenceService: ReferenceService,
     private visualService: VisualService,
     private documentService: DocumentService,
-    private documentAuthorizationService: DocumentAuthorizationService,
     private locationService: LocationService,
     @InjectRepository(Profile)
     private profileRepository: Repository<Profile>,
@@ -59,7 +58,8 @@ export class ProfileService {
   public async createProfile(
     profileData: CreateProfileInput,
     profileType: ProfileType,
-    storageAggregator: IStorageAggregator
+    storageAggregator: IStorageAggregator,
+    agentInfo: AgentInfo
   ): Promise<IProfile> {
     const profile: IProfile = Profile.create({
       description: profileData?.description,
@@ -76,13 +76,18 @@ export class ProfileService {
     });
     profile.description = await this.reuploadDocumentsInMarkdownProfile(
       profile.description ?? '',
-      profile.storageBucket
+      profile.storageBucket,
+      agentInfo
     );
     profile.visuals = [];
     profile.location = this.locationService.createLocation(
       profileData?.location
     );
-    this.createReferencesOnProfile(profileData?.referencesData, profile);
+    this.createReferencesOnProfile(
+      profileData?.referencesData,
+      profile,
+      agentInfo
+    );
 
     const tagsetsFromInput = profileData?.tagsets?.map(tagsetData =>
       this.tagsetService.createTagsetWithName([], tagsetData)
@@ -94,7 +99,8 @@ export class ProfileService {
 
   private async createReferencesOnProfile(
     references: CreateReferenceInput[] | undefined,
-    profile: IProfile
+    profile: IProfile,
+    agentInfo: AgentInfo
   ) {
     if (!profile.storageBucket) {
       throw new EntityNotInitializedException(
@@ -107,7 +113,9 @@ export class ProfileService {
       const newReference = this.referenceService.createReference(reference);
       const newUrl = await this.reuploadFileOnStorageBucket(
         newReference.uri,
-        profile.storageBucket
+        profile.storageBucket,
+        false,
+        agentInfo
       );
       if (newUrl) {
         newReference.uri = newUrl;
@@ -223,7 +231,8 @@ export class ProfileService {
   public async addVisualsOnProfile(
     profile: IProfile,
     visualsData: CreateVisualOnProfileInput[] | undefined,
-    visualTypes: VisualType[]
+    visualTypes: VisualType[],
+    agentInfo: AgentInfo
   ): Promise<IProfile> {
     if (!profile.visuals || !profile.storageBucket) {
       throw new EntityNotInitializedException(
@@ -257,7 +266,8 @@ export class ProfileService {
         const url = await this.reuploadFileOnStorageBucket(
           providedVisual.uri,
           profile.storageBucket,
-          true
+          true,
+          agentInfo
         );
         if (url) {
           visual.uri = url;
@@ -278,11 +288,13 @@ export class ProfileService {
    * @param fileUrl The url of the file to check
    * @param storageBucket The StorageBucket in which the file should be
    * @param alkemioRequired If true, the file must be inside Alkemio and if a fileUrl passed is outside Alkemio function will return undefined
+   * @param agentInfo to check if the user has access to the file
    */
   private async reuploadFileOnStorageBucket(
     fileUrl: string,
     storageBucket: IStorageBucket,
-    alkemioRequired: boolean = false
+    alkemioRequired: boolean,
+    agentInfo: AgentInfo
   ): Promise<string | undefined> {
     if (!this.documentService.isAlkemioDocumentURL(fileUrl)) {
       // If image is not inside Alkemio just return url (or undefined if image needs to be inside Alkemio, but never refetch it)
@@ -310,6 +322,19 @@ export class ProfileService {
       );
     }
 
+    if (
+      !this.storageBucketService.hasAgentAccessToDocument(
+        docInContent,
+        agentInfo
+      )
+    ) {
+      // If user does not have access to the file just return the url, we cannot copy that document
+      this.logger.warn(
+        `Denyed access to copy document on entity creation '${fileUrl}' userId: ${agentInfo.userID}`
+      );
+      return fileUrl;
+    }
+
     const docInThisBucket = storageBucket.documents.find(
       doc => doc.id === docInContent.id
     );
@@ -327,7 +352,7 @@ export class ProfileService {
     } else {
       // if not in this bucket - create it inside it
       const newDoc = await this.documentService.createDocument({
-        createdBy: docInContent.createdBy,
+        createdBy: agentInfo.userID,
         displayName: docInContent.displayName,
         externalID: docInContent.externalID, // Point to the same content
         mimeType: docInContent.mimeType,
@@ -345,7 +370,8 @@ export class ProfileService {
 
   private async reuploadDocumentsInMarkdownProfile(
     markdown: string,
-    storageBucket: IStorageBucket
+    storageBucket: IStorageBucket,
+    agentInfo: AgentInfo
   ): Promise<string> {
     const baseUrl = this.documentService.getDocumentsBaseUrlPath() + '/';
     const escapedBaseUrl = baseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -358,7 +384,9 @@ export class ProfileService {
       for (const match of matches) {
         const newUrl = await this.reuploadFileOnStorageBucket(
           match,
-          storageBucket
+          storageBucket,
+          false,
+          agentInfo
         );
         if (newUrl) {
           markdown = markdown.replace(match, newUrl);
