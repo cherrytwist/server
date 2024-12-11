@@ -115,7 +115,7 @@ export class SpaceService {
 
   public async createSpace(
     spaceData: CreateSpaceInput,
-    agentInfo?: AgentInfo
+    agentInfo: AgentInfo
   ): Promise<ISpace> {
     if (!spaceData.type) {
       // default to match the level if not specified
@@ -229,7 +229,8 @@ export class SpaceService {
 
     space.community = await this.communityService.createCommunity(
       communityData,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
 
     space.context = this.contextService.createContext(spaceData.context);
@@ -238,7 +239,8 @@ export class SpaceService {
     space.profile = await this.profileService.createProfile(
       spaceData.profileData,
       profileType,
-      space.storageAggregator
+      space.storageAggregator,
+      agentInfo
     );
     await this.profileService.addTagsetOnProfile(space.profile, {
       name: TagsetReservedName.DEFAULT,
@@ -249,7 +251,8 @@ export class SpaceService {
     await this.profileService.addVisualsOnProfile(
       space.profile,
       spaceData.profileData.visuals,
-      [VisualType.AVATAR, VisualType.BANNER, VisualType.CARD]
+      [VisualType.AVATAR, VisualType.BANNER, VisualType.CARD],
+      agentInfo
     );
 
     space.levelZeroSpaceID = '';
@@ -934,7 +937,7 @@ export class SpaceService {
 
   async createSubspace(
     subspaceData: CreateSubspaceInput,
-    agentInfo?: AgentInfo
+    agentInfo: AgentInfo
   ): Promise<ISpace> {
     const space = await this.getSpaceOrFail(subspaceData.spaceID, {
       relations: {

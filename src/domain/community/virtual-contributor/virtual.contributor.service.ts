@@ -73,7 +73,7 @@ export class VirtualContributorService {
   async createVirtualContributor(
     virtualContributorData: CreateVirtualContributorInput,
     storageAggregator: IStorageAggregator,
-    agentInfo?: AgentInfo
+    agentInfo: AgentInfo
   ): Promise<IVirtualContributor> {
     if (virtualContributorData.nameID) {
       // Convert nameID to lower case
@@ -114,7 +114,8 @@ export class VirtualContributorService {
     virtualContributor.profile = await this.profileService.createProfile(
       virtualContributorData.profileData,
       ProfileType.VIRTUAL_CONTRIBUTOR,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
     await this.profileService.addTagsetOnProfile(virtualContributor.profile, {
       name: TagsetReservedName.KEYWORDS,
@@ -127,7 +128,8 @@ export class VirtualContributorService {
 
     this.contributorService.addAvatarVisualToContributorProfile(
       virtualContributor.profile,
-      virtualContributorData.profileData
+      virtualContributorData.profileData,
+      agentInfo
     );
 
     virtualContributor.agent = await this.agentService.createAgent({

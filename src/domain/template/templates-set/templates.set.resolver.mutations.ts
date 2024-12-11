@@ -47,7 +47,8 @@ export class TemplatesSetResolverMutations {
     );
     const template = await this.templatesSetService.createTemplate(
       templatesSet,
-      templateData
+      templateData,
+      agentInfo
     );
     const authorizations =
       await this.templateAuthorizationService.applyAuthorizationPolicy(
@@ -92,7 +93,8 @@ export class TemplatesSetResolverMutations {
       await this.templatesSetService.createTemplateFromCollaboration(
         templatesSet,
         templateData,
-        collaboration
+        collaboration,
+        agentInfo
       );
     const authorizations =
       await this.templateAuthorizationService.applyAuthorizationPolicy(

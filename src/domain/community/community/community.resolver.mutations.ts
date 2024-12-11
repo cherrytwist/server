@@ -43,7 +43,7 @@ export class CommunityResolverMutations {
       AuthorizationPrivilege.CREATE,
       `create group community: ${community.id}`
     );
-    const group = await this.communityService.createGroup(groupData);
+    const group = await this.communityService.createGroup(groupData, agentInfo);
     const authorizations =
       await this.userGroupAuthorizationService.applyAuthorizationPolicy(
         group,

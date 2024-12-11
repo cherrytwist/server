@@ -78,7 +78,7 @@ export class OrganizationService {
 
   async createOrganization(
     organizationData: CreateOrganizationInput,
-    agentInfo?: AgentInfo
+    agentInfo: AgentInfo
   ): Promise<IOrganization> {
     if (organizationData.nameID) {
       // Convert nameID to lower case
@@ -105,7 +105,8 @@ export class OrganizationService {
     organization.profile = await this.profileService.createProfile(
       organizationData.profileData,
       ProfileType.ORGANIZATION,
-      organization.storageAggregator
+      organization.storageAggregator,
+      agentInfo
     );
     await this.profileService.addTagsetOnProfile(organization.profile, {
       name: TagsetReservedName.KEYWORDS,
@@ -434,7 +435,10 @@ export class OrganizationService {
     return activity;
   }
 
-  async createGroup(groupData: CreateUserGroupInput): Promise<IUserGroup> {
+  async createGroup(
+    groupData: CreateUserGroupInput,
+    agentInfo: AgentInfo
+  ): Promise<IUserGroup> {
     const orgID = groupData.parentID;
     const groupName = groupData.profile.displayName;
     // First find the Challenge
@@ -460,7 +464,8 @@ export class OrganizationService {
     const group = await this.userGroupService.addGroupWithName(
       organization,
       groupName,
-      organization.storageAggregator
+      organization.storageAggregator,
+      agentInfo
     );
     await this.organizationRepository.save(organization);
 

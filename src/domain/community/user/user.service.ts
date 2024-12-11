@@ -110,7 +110,7 @@ export class UserService {
 
   async createUser(
     userData: CreateUserInput,
-    agentInfo?: AgentInfo
+    agentInfo: AgentInfo
   ): Promise<IUser> {
     if (userData.nameID) {
       // Convert nameID to lower case
@@ -144,7 +144,8 @@ export class UserService {
     user.profile = await this.profileService.createProfile(
       profileData,
       ProfileType.USER,
-      user.storageAggregator
+      user.storageAggregator,
+      agentInfo
     );
 
     await this.profileService.addTagsetOnProfile(user.profile, {

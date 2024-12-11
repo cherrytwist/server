@@ -22,6 +22,7 @@ import { NamingService } from '@services/infrastructure/naming/naming.service';
 import { CreateTemplateFromCollaborationOnTemplatesSetInput } from './dto/templates.set.dto.create.template.from.collaboration';
 import { ICollaboration } from '@domain/collaboration/collaboration';
 import { InputCreatorService } from '@services/api/input-creator/input.creator.service';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class TemplatesSetService {
@@ -110,7 +111,8 @@ export class TemplatesSetService {
 
   async createTemplate(
     templatesSet: ITemplatesSet,
-    templateInput: CreateTemplateInput
+    templateInput: CreateTemplateInput,
+    agentInfo: AgentInfo
   ): Promise<ITemplate> {
     const reservedNameIDs =
       await this.namingService.getReservedNameIDsInTemplatesSet(
@@ -137,7 +139,8 @@ export class TemplatesSetService {
 
     const template = await this.templateService.createTemplate(
       templateInput,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
     template.templatesSet = templatesSet;
     return await this.templateService.save(template);
@@ -146,7 +149,8 @@ export class TemplatesSetService {
   async createTemplateFromCollaboration(
     templatesSet: ITemplatesSet,
     templateCollaborationInput: CreateTemplateFromCollaborationOnTemplatesSetInput,
-    collaboration: ICollaboration
+    collaboration: ICollaboration,
+    agentInfo: AgentInfo
   ): Promise<ITemplate> {
     const collaborationInput =
       await this.inputCreatorService.buildCreateCollaborationInputFromCollaboration(
@@ -157,7 +161,7 @@ export class TemplatesSetService {
       type: TemplateType.COLLABORATION,
       collaborationData: collaborationInput,
     };
-    return await this.createTemplate(templatesSet, templateInput);
+    return await this.createTemplate(templatesSet, templateInput, agentInfo);
   }
 
   private async getStorageAggregator(

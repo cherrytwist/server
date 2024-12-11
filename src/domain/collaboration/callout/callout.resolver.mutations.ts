@@ -227,7 +227,7 @@ export class CalloutResolverMutations {
 
     let contribution = await this.calloutService.createContributionOnCallout(
       contributionData,
-      agentInfo.userID
+      agentInfo
     );
 
     const { roleSet, spaceSettings } =

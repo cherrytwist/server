@@ -53,7 +53,7 @@ export class ContributorService {
   public async addAvatarVisualToContributorProfile(
     profile: IProfile,
     profileData: CreateProfileInput,
-    agentInfo?: AgentInfo,
+    agentInfo: AgentInfo,
     firstName?: string,
     lastName?: string
   ): Promise<void> {
@@ -61,7 +61,7 @@ export class ContributorService {
     const avatarUrlFromProfile = profileData.visuals?.find(
       visual => visual.name === VisualType.AVATAR
     )?.uri;
-    const avatarUrlFromAgent = agentInfo?.avatarURL;
+    const avatarUrlFromAgent = agentInfo.avatarURL;
     if (avatarUrlFromProfile && this.isValidHttpUrl(avatarUrlFromProfile)) {
       // Avatar has been explicitly set
       avatarURL = avatarUrlFromProfile;
@@ -85,9 +85,12 @@ export class ContributorService {
         uri: avatarURL,
       },
     ];
-    await this.profileService.addVisualsOnProfile(profile, avatarVisual, [
-      VisualType.AVATAR,
-    ]);
+    await this.profileService.addVisualsOnProfile(
+      profile,
+      avatarVisual,
+      [VisualType.AVATAR],
+      agentInfo
+    );
   }
 
   public async ensureAvatarIsStoredInLocalStorageBucket(

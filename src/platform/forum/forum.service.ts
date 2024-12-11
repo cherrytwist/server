@@ -24,6 +24,7 @@ import { IForum } from './forum.interface';
 import { ForumDiscussionCategoryException } from '@common/exceptions/forum.discussion.category.exception';
 import { CommunicationAdapter } from '@services/adapters/communication-adapter/communication.adapter';
 import { AuthorizationPolicyType } from '@common/enums/authorization.policy.type';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class ForumService {
@@ -58,7 +59,8 @@ export class ForumService {
   async createDiscussion(
     discussionData: ForumCreateDiscussionInput,
     userID: string,
-    userForumID: string
+    userForumID: string,
+    agentInfo: AgentInfo
   ): Promise<IDiscussion> {
     const displayName = discussionData.profile.displayName;
     const forumID = discussionData.forumID;
@@ -95,7 +97,8 @@ export class ForumService {
       userID,
       'platform-forum',
       RoomType.DISCUSSION_FORUM,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
     this.logger.verbose?.(
       `[Discussion] Room created (${displayName}) and membership replicated from Updates (${forumID})`,

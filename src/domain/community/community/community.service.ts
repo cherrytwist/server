@@ -25,6 +25,7 @@ import { ICommunityGuidelines } from '../community-guidelines/community.guidelin
 import { AuthorizationPolicyType } from '@common/enums/authorization.policy.type';
 import { RoleSetService } from '@domain/access/role-set/role.set.service';
 import { IRoleSet } from '@domain/access/role-set';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class CommunityService {
@@ -43,7 +44,8 @@ export class CommunityService {
 
   async createCommunity(
     communityData: CreateCommunityInput,
-    storageAggregator: IStorageAggregator
+    storageAggregator: IStorageAggregator,
+    agentInfo: AgentInfo
   ): Promise<ICommunity> {
     const community: ICommunity = new Community();
     community.authorization = new AuthorizationPolicy(
@@ -56,7 +58,8 @@ export class CommunityService {
     community.guidelines =
       await this.communityGuidelinesService.createCommunityGuidelines(
         communityData.guidelines,
-        storageAggregator
+        storageAggregator,
+        agentInfo
       );
 
     community.groups = [];
@@ -68,7 +71,10 @@ export class CommunityService {
     return community;
   }
 
-  async createGroup(groupData: CreateUserGroupInput): Promise<IUserGroup> {
+  async createGroup(
+    groupData: CreateUserGroupInput,
+    agentInfo: AgentInfo
+  ): Promise<IUserGroup> {
     const communityID = groupData.parentID;
     const groupName = groupData.profile.displayName;
 
@@ -89,7 +95,8 @@ export class CommunityService {
     const group = await this.userGroupService.addGroupWithName(
       community,
       groupName,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
     await this.communityRepository.save(community);
 

@@ -81,7 +81,7 @@ export class CollaborationService {
   async createCollaboration(
     collaborationData: CreateCollaborationInput,
     storageAggregator: IStorageAggregator,
-    agentInfo?: AgentInfo
+    agentInfo: AgentInfo
   ): Promise<ICollaboration> {
     if (
       !collaborationData.calloutGroups ||
@@ -156,7 +156,7 @@ export class CollaborationService {
       collaboration,
       collaborationData.calloutsData,
       storageAggregator,
-      agentInfo?.userID
+      agentInfo
     );
 
     // Note: need to create the innovation flow after creation of
@@ -175,7 +175,9 @@ export class CollaborationService {
       await this.innovationFlowService.createInnovationFlow(
         collaborationData.innovationFlowData,
         [statesTagsetTemplate],
-        storageAggregator
+        storageAggregator,
+        false,
+        agentInfo
       );
 
     this.moveCalloutsToDefaultGroupAndState(
@@ -223,7 +225,7 @@ export class CollaborationService {
     collaboration: ICollaboration,
     calloutsData: CreateCalloutInput[],
     storageAggregator: IStorageAggregator,
-    userID: string | undefined
+    agentInfo: AgentInfo
   ): Promise<ICallout[]> {
     if (!collaboration.tagsetTemplateSet || !collaboration.callouts) {
       throw new EntityNotInitializedException(
@@ -258,7 +260,7 @@ export class CollaborationService {
         calloutDefault,
         collaboration.tagsetTemplateSet.tagsetTemplates,
         storageAggregator,
-        userID
+        agentInfo
       );
       callouts.push(callout);
     }
@@ -406,7 +408,7 @@ export class CollaborationService {
 
   public async createCalloutOnCollaboration(
     calloutData: CreateCalloutOnCollaborationInput,
-    userID: string
+    agentInfo: AgentInfo
   ): Promise<ICallout> {
     const collaborationID = calloutData.collaborationID;
     const collaboration = await this.getCollaborationOrFail(collaborationID, {
@@ -456,7 +458,7 @@ export class CollaborationService {
       calloutData,
       tagsetTemplates,
       storageAggregator,
-      userID
+      agentInfo
     );
     // this has the effect of adding the callout to the collaboration
     callout.collaboration = collaboration;

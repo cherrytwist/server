@@ -25,6 +25,7 @@ import { UpdateWhiteboardInput } from './dto/whiteboard.dto.update';
 import { AuthorizationPolicyType } from '@common/enums/authorization.policy.type';
 import { LicenseService } from '../license/license.service';
 import { LicenseEntitlementType } from '@common/enums/license.entitlement.type';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class WhiteboardService {
@@ -41,7 +42,7 @@ export class WhiteboardService {
   async createWhiteboard(
     whiteboardData: CreateWhiteboardInput,
     storageAggregator: IStorageAggregator,
-    userID?: string
+    agentInfo: AgentInfo
   ): Promise<IWhiteboard> {
     const whiteboard: IWhiteboard = Whiteboard.create({
       ...whiteboardData,
@@ -49,7 +50,7 @@ export class WhiteboardService {
     whiteboard.authorization = new AuthorizationPolicy(
       AuthorizationPolicyType.WHITEBOARD
     );
-    whiteboard.createdBy = userID;
+    whiteboard.createdBy = agentInfo.userID;
     whiteboard.contentUpdatePolicy = ContentUpdatePolicy.CONTRIBUTORS;
 
     whiteboard.profile = await this.profileService.createProfile(
@@ -57,12 +58,14 @@ export class WhiteboardService {
         displayName: 'Whiteboard',
       },
       ProfileType.WHITEBOARD,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
     await this.profileService.addVisualsOnProfile(
       whiteboard.profile,
       whiteboardData.profile?.visuals,
-      [VisualType.CARD]
+      [VisualType.CARD],
+      agentInfo
     );
     await this.profileService.addTagsetOnProfile(whiteboard.profile, {
       name: TagsetReservedName.DEFAULT,

@@ -25,6 +25,7 @@ import { ILink } from '../link/link.interface';
 import { AuthorizationPolicyType } from '@common/enums/authorization.policy.type';
 import { IStorageBucket } from '@domain/storage/storage-bucket/storage.bucket.interface';
 import { IProfile } from '@domain/common/profile/profile.interface';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class CalloutContributionService {
@@ -41,7 +42,7 @@ export class CalloutContributionService {
     calloutContributionData: CreateCalloutContributionInput,
     storageAggregator: IStorageAggregator,
     contributionPolicy: ICalloutContributionPolicy,
-    userID: string
+    agentInfo: AgentInfo
   ): Promise<ICalloutContribution> {
     const contribution: ICalloutContribution = CalloutContribution.create(
       calloutContributionData
@@ -50,7 +51,7 @@ export class CalloutContributionService {
     contribution.authorization = new AuthorizationPolicy(
       AuthorizationPolicyType.CALLOUT_CONTRIBUTION
     );
-    contribution.createdBy = userID;
+    contribution.createdBy = agentInfo.userID;
     contribution.sortOrder = calloutContributionData.sortOrder ?? 0;
 
     const { post, whiteboard, link } = calloutContributionData;
@@ -63,7 +64,7 @@ export class CalloutContributionService {
       contribution.whiteboard = await this.whiteboardService.createWhiteboard(
         whiteboard,
         storageAggregator,
-        userID
+        agentInfo
       );
     }
 
@@ -76,7 +77,7 @@ export class CalloutContributionService {
       contribution.post = await this.postService.createPost(
         post,
         storageAggregator,
-        userID
+        agentInfo
       );
     }
 
@@ -88,7 +89,8 @@ export class CalloutContributionService {
 
       contribution.link = await this.linkService.createLink(
         link,
-        storageAggregator
+        storageAggregator,
+        agentInfo
       );
     }
 

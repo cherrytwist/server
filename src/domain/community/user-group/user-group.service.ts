@@ -30,6 +30,7 @@ import {
 } from './dto';
 import { IStorageAggregator } from '@domain/storage/storage-aggregator/storage.aggregator.interface';
 import { AuthorizationPolicyType } from '@common/enums/authorization.policy.type';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class UserGroupService {
@@ -45,7 +46,8 @@ export class UserGroupService {
 
   async createUserGroup(
     userGroupData: CreateUserGroupInput,
-    storageAggregator: IStorageAggregator
+    storageAggregator: IStorageAggregator,
+    agentInfo: AgentInfo
   ): Promise<IUserGroup> {
     const group = UserGroup.create(userGroupData);
     group.authorization = new AuthorizationPolicy(
@@ -55,7 +57,8 @@ export class UserGroupService {
     (group as IUserGroup).profile = await this.profileService.createProfile(
       userGroupData.profile,
       ProfileType.USER_GROUP,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
     const savedUserGroup = await this.userGroupRepository.save(group);
     this.logger.verbose?.(
@@ -219,7 +222,8 @@ export class UserGroupService {
   async addGroupWithName(
     groupable: IGroupable,
     name: string,
-    storageAggregator: IStorageAggregator
+    storageAggregator: IStorageAggregator,
+    agentInfo: AgentInfo
   ): Promise<IUserGroup> {
     // Check if the group already exists, if so log a warning
     const alreadyExists = this.hasGroupWithName(groupable, name);
@@ -237,7 +241,8 @@ export class UserGroupService {
           displayName: name,
         },
       },
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
     await groupable.groups?.push(newGroup);
     return newGroup;

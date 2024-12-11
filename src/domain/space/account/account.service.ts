@@ -60,7 +60,7 @@ export class AccountService {
 
   async createSpaceOnAccount(
     spaceData: CreateSpaceOnAccountInput,
-    agentInfo?: AgentInfo
+    agentInfo: AgentInfo
   ): Promise<ISpace> {
     const account = await this.getAccountOrFail(spaceData.accountID, {
       relations: {
@@ -228,7 +228,7 @@ export class AccountService {
 
   public async createVirtualContributorOnAccount(
     vcData: CreateVirtualContributorOnAccountInput,
-    agentInfo?: AgentInfo
+    agentInfo: AgentInfo
   ): Promise<IVirtualContributor> {
     const accountID = vcData.accountID;
     const account = await this.getAccountOrFail(accountID, {
@@ -255,7 +255,8 @@ export class AccountService {
   }
 
   public async createInnovationHubOnAccount(
-    innovationHubData: CreateInnovationHubOnAccountInput
+    innovationHubData: CreateInnovationHubOnAccountInput,
+    agentInfo: AgentInfo
   ): Promise<IInnovationHub> {
     const accountID = innovationHubData.accountID;
     const account = await this.getAccountOrFail(accountID, {
@@ -270,7 +271,8 @@ export class AccountService {
     }
     let hub = await this.innovationHubService.createInnovationHub(
       innovationHubData,
-      account
+      account,
+      agentInfo
     );
     hub.account = account;
     hub = await this.innovationHubService.save(hub);
@@ -284,7 +286,8 @@ export class AccountService {
   }
 
   public async createInnovationPackOnAccount(
-    ipData: CreateInnovationPackOnAccountInput
+    ipData: CreateInnovationPackOnAccountInput,
+    agentInfo: AgentInfo
   ): Promise<IInnovationPack> {
     const accountID = ipData.accountID;
     const account = await this.getAccountOrFail(accountID, {
@@ -299,7 +302,8 @@ export class AccountService {
     }
     let ip = await this.innovationPackService.createInnovationPack(
       ipData,
-      account.storageAggregator
+      account.storageAggregator,
+      agentInfo
     );
     ip.account = account;
     ip = await this.innovationPackService.save(ip);

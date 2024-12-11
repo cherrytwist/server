@@ -70,7 +70,7 @@ export class TemplateApplierResolverMutations {
       await this.templateApplierService.updateCollaborationFromTemplate(
         updateData,
         targetCollaboration,
-        agentInfo.userID
+        agentInfo
       );
     // Reset the authorization policy to re-evaluate the access control rules.
     targetCollaboration =

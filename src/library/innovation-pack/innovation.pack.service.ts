@@ -25,6 +25,7 @@ import { SearchVisibility } from '@common/enums/search.visibility';
 import { IContributor } from '@domain/community/contributor/contributor.interface';
 import { AccountHostService } from '@domain/space/account.host/account.host.service';
 import { AuthorizationPolicyType } from '@common/enums/authorization.policy.type';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class InnovationPackService {
@@ -39,7 +40,8 @@ export class InnovationPackService {
 
   async createInnovationPack(
     innovationPackData: CreateInnovationPackInput,
-    storageAggregator: IStorageAggregator
+    storageAggregator: IStorageAggregator,
+    agentInfo: AgentInfo
   ): Promise<IInnovationPack> {
     const innovationPack: IInnovationPack =
       InnovationPack.create(innovationPackData);
@@ -50,12 +52,14 @@ export class InnovationPackService {
     innovationPack.profile = await this.profileService.createProfile(
       innovationPackData.profileData,
       ProfileType.INNOVATION_PACK,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
     await this.profileService.addVisualsOnProfile(
       innovationPack.profile,
       innovationPackData.profileData.visuals,
-      [VisualType.CARD]
+      [VisualType.CARD],
+      agentInfo
     );
 
     innovationPack.listedInStore = true;

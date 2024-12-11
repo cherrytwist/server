@@ -24,6 +24,7 @@ import { Timeline } from '@domain/timeline/timeline/timeline.entity';
 import { Collaboration } from '@domain/collaboration/collaboration';
 import { Space } from '@domain/space/space/space.entity';
 import { SpaceLevel } from '@common/enums/space.level';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class CalendarEventService {
@@ -39,14 +40,15 @@ export class CalendarEventService {
   public async createCalendarEvent(
     calendarEventInput: CreateCalendarEventInput,
     storageAggregator: IStorageAggregator,
-    userID: string
+    agentInfo: AgentInfo
   ): Promise<ICalendarEvent> {
     const calendarEvent: ICalendarEvent =
       CalendarEvent.create(calendarEventInput);
     calendarEvent.profile = await this.profileService.createProfile(
       calendarEventInput.profileData,
       ProfileType.CALENDAR_EVENT,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
     await this.profileService.addTagsetOnProfile(calendarEvent.profile, {
       name: TagsetReservedName.DEFAULT,
@@ -55,7 +57,7 @@ export class CalendarEventService {
     calendarEvent.authorization = new AuthorizationPolicy(
       AuthorizationPolicyType.CALENDAR_EVENT
     );
-    calendarEvent.createdBy = userID;
+    calendarEvent.createdBy = agentInfo.userID;
 
     calendarEvent.comments = await this.roomService.createRoom(
       `calendarEvent-comments-${calendarEvent.nameID}`,

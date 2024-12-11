@@ -49,7 +49,10 @@ export class OrganizationResolverMutations {
       `orgCreateGroup: ${organization.id}`
     );
 
-    const group = await this.organizationService.createGroup(groupData);
+    const group = await this.organizationService.createGroup(
+      groupData,
+      agentInfo
+    );
     const authorizations =
       await this.userGroupAuthorizationService.applyAuthorizationPolicy(
         group,

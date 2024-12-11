@@ -3,6 +3,7 @@ import { UpdateCollaborationFromTemplateInput } from './dto/template.applier.dto
 import { TemplateService } from '../template/template.service';
 import { ICollaboration } from '@domain/collaboration/collaboration/collaboration.interface';
 import { CollaborationService } from '@domain/collaboration/collaboration/collaboration.service';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class TemplateApplierService {
@@ -14,7 +15,7 @@ export class TemplateApplierService {
   async updateCollaborationFromTemplate(
     updateData: UpdateCollaborationFromTemplateInput,
     targetCollaboration: ICollaboration,
-    userID: string
+    agentInfo: AgentInfo
   ): Promise<ICollaboration> {
     const collaborationTemplate = await this.templateService.getCollaboration(
       updateData.collaborationTemplateID
@@ -33,7 +34,7 @@ export class TemplateApplierService {
       collaborationFromTemplate,
       targetCollaboration,
       updateData.addCallouts,
-      userID
+      agentInfo
     );
   }
 }

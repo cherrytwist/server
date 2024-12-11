@@ -69,7 +69,7 @@ export class RegistrationResolverMutations {
       AuthorizationPrivilege.CREATE,
       `create new User: ${agentInfo.email}`
     );
-    const user = await this.userService.createUser(userData);
+    const user = await this.userService.createUser(userData, agentInfo);
     return this.processCreatedUser(user, agentInfo);
   }
 

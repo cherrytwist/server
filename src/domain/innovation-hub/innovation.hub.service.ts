@@ -21,6 +21,7 @@ import { IAccount } from '@domain/space/account/account.interface';
 import { IContributor } from '@domain/community/contributor/contributor.interface';
 import { AccountHostService } from '@domain/space/account.host/account.host.service';
 import { AuthorizationPolicyType } from '@common/enums/authorization.policy.type';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class InnovationHubService {
@@ -36,7 +37,8 @@ export class InnovationHubService {
 
   public async createInnovationHub(
     createData: CreateInnovationHubInput,
-    account: IAccount
+    account: IAccount,
+    agentInfo: AgentInfo
   ): Promise<IInnovationHub | never> {
     try {
       await this.validateCreateInput(createData);
@@ -92,7 +94,8 @@ export class InnovationHubService {
     hub.profile = await this.profileService.createProfile(
       createData.profileData,
       ProfileType.INNOVATION_HUB,
-      account.storageAggregator
+      account.storageAggregator,
+      agentInfo
     );
 
     await this.profileService.addTagsetOnProfile(hub.profile, {
@@ -103,7 +106,8 @@ export class InnovationHubService {
     await this.profileService.addVisualsOnProfile(
       hub.profile,
       createData.profileData.visuals,
-      [VisualType.BANNER_WIDE]
+      [VisualType.BANNER_WIDE],
+      agentInfo
     );
 
     return await this.save(hub);

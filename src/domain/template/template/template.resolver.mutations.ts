@@ -96,7 +96,7 @@ export class TemplateResolverMutations {
       await this.templateService.updateTemplateFromCollaboration(
         template,
         updateData,
-        agentInfo.userID
+        agentInfo
       );
 
     const authorizations =

@@ -48,6 +48,7 @@ import { UpdateCalloutInput } from './dto/callout.dto.update';
 import { UpdateContributionCalloutsSortOrderInput } from '../callout-contribution/dto/callout.contribution.dto.update.callouts.sort.order';
 import { keyBy } from 'lodash';
 import { IStorageBucket } from '@domain/storage/storage-bucket/storage.bucket.interface';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class CalloutService {
@@ -69,7 +70,7 @@ export class CalloutService {
     calloutData: CreateCalloutInput,
     tagsetTemplates: ITagsetTemplate[],
     storageAggregator: IStorageAggregator,
-    userID?: string
+    agentInfo: AgentInfo
   ): Promise<ICallout> {
     this.validateCreateCalloutData(calloutData);
 
@@ -81,7 +82,7 @@ export class CalloutService {
     callout.authorization = new AuthorizationPolicy(
       AuthorizationPolicyType.CALLOUT
     );
-    callout.createdBy = userID ?? undefined;
+    callout.createdBy = agentInfo.userID ?? undefined;
     callout.visibility = calloutData.visibility ?? CalloutVisibility.DRAFT;
     callout.contributions = [];
 
@@ -89,7 +90,7 @@ export class CalloutService {
       calloutData.framing,
       tagsetTemplates,
       storageAggregator,
-      userID
+      agentInfo
     );
     if (calloutData.groupName) {
       this.calloutFramingService.updateCalloutGroupTagsetValue(
@@ -426,7 +427,7 @@ export class CalloutService {
 
   public async createContributionOnCallout(
     contributionData: CreateContributionOnCalloutInput,
-    userID: string
+    agentInfo: AgentInfo
   ): Promise<ICalloutContribution> {
     const calloutID = contributionData.calloutID;
     const callout = await this.getCalloutOrFail(calloutID, {
@@ -483,7 +484,7 @@ export class CalloutService {
         contributionData,
         storageAggregator,
         callout.contributionPolicy,
-        userID
+        agentInfo
       );
     contribution.callout = callout;
 

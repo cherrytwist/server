@@ -24,6 +24,7 @@ import { AuthorizationPolicyService } from '@domain/common/authorization-policy/
 import { IStorageAggregator } from '@domain/storage/storage-aggregator/storage.aggregator.interface';
 import { ITagset } from '@domain/common/tagset';
 import { AuthorizationPolicyType } from '@common/enums/authorization.policy.type';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class CalloutFramingService {
@@ -40,7 +41,7 @@ export class CalloutFramingService {
     calloutFramingData: CreateCalloutFramingInput,
     tagsetTemplates: ITagsetTemplate[],
     storageAggregator: IStorageAggregator,
-    userID?: string
+    agentInfo: AgentInfo
   ): Promise<ICalloutFraming> {
     const calloutFraming: ICalloutFraming =
       CalloutFraming.create(calloutFramingData);
@@ -73,7 +74,8 @@ export class CalloutFramingService {
     calloutFraming.profile = await this.profileService.createProfile(
       profile,
       ProfileType.CALLOUT_FRAMING,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
 
     if (whiteboard) {
@@ -86,12 +88,13 @@ export class CalloutFramingService {
       calloutFraming.whiteboard = await this.whiteboardService.createWhiteboard(
         whiteboard,
         storageAggregator,
-        userID
+        agentInfo
       );
       await this.profileService.addVisualsOnProfile(
         calloutFraming.whiteboard.profile,
         whiteboard.profile?.visuals,
-        [VisualType.BANNER]
+        [VisualType.BANNER],
+        agentInfo
       );
     }
 

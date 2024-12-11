@@ -36,6 +36,7 @@ import { UpdateTemplateFromCollaborationInput } from './dto/template.dto.update.
 import { StorageAggregatorResolverService } from '@services/infrastructure/storage-aggregator-resolver/storage.aggregator.resolver.service';
 import { InputCreatorService } from '@services/api/input-creator/input.creator.service';
 import { InnovationFlowService } from '@domain/collaboration/innovation-flow/innovation.flow.service';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class TemplateService {
@@ -58,7 +59,8 @@ export class TemplateService {
 
   async createTemplate(
     templateData: CreateTemplateInput,
-    storageAggregator: IStorageAggregator
+    storageAggregator: IStorageAggregator,
+    agentInfo: AgentInfo
   ): Promise<ITemplate> {
     const template: ITemplate = Template.create(templateData);
     template.authorization = new AuthorizationPolicy(
@@ -68,7 +70,8 @@ export class TemplateService {
     template.profile = await this.profileService.createProfile(
       templateData.profileData,
       ProfileType.TEMPLATE,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
     await this.profileService.addTagsetOnProfile(template.profile, {
       name: TagsetReservedName.DEFAULT,
@@ -77,7 +80,8 @@ export class TemplateService {
     await this.profileService.addVisualsOnProfile(
       template.profile,
       templateData.profileData.visuals,
-      [VisualType.CARD]
+      [VisualType.CARD],
+      agentInfo
     );
     switch (template.type) {
       case TemplateType.POST: {
@@ -103,7 +107,8 @@ export class TemplateService {
         template.communityGuidelines =
           await this.communityGuidelinesService.createCommunityGuidelines(
             guidelinesInput,
-            storageAggregator
+            storageAggregator,
+            agentInfo
           );
         break;
       }
@@ -154,7 +159,8 @@ export class TemplateService {
         template.collaboration =
           await this.collaborationService.createCollaboration(
             collaborationData!,
-            storageAggregator
+            storageAggregator,
+            agentInfo
           );
 
         break;
@@ -174,7 +180,8 @@ export class TemplateService {
             nameID: randomUUID().slice(0, 8),
             content: templateData.whiteboard.content,
           },
-          storageAggregator
+          storageAggregator,
+          agentInfo
         );
         break;
       }
@@ -193,7 +200,8 @@ export class TemplateService {
         template.callout = await this.calloutService.createCallout(
           templateData.calloutData!,
           [],
-          storageAggregator
+          storageAggregator,
+          agentInfo
         );
         break;
       }
@@ -282,7 +290,7 @@ export class TemplateService {
   public async updateTemplateFromCollaboration(
     templateInput: ITemplate,
     templateData: UpdateTemplateFromCollaborationInput,
-    userID: string
+    agentInfo: AgentInfo
   ): Promise<ITemplate> {
     if (!templateInput.collaboration) {
       throw new RelationshipNotFoundException(
@@ -316,7 +324,7 @@ export class TemplateService {
         sourceCollaboration,
         templateInput.collaboration,
         true,
-        userID
+        agentInfo
       );
 
     return await this.getTemplateOrFail(templateInput.id);
@@ -326,7 +334,7 @@ export class TemplateService {
     sourceCollaboration: ICollaboration,
     targetCollaboration: ICollaboration,
     addCallouts: boolean,
-    userID: string
+    agentInfo: AgentInfo
   ): Promise<ICollaboration> {
     if (
       !sourceCollaboration.innovationFlow ||
@@ -360,7 +368,7 @@ export class TemplateService {
         targetCollaboration,
         calloutsFromSourceCollaboration,
         storageAggregator,
-        userID
+        agentInfo
       );
       targetCollaboration.callouts?.push(...newCallouts);
       this.ensureCalloutsInValidGroupsAndStates(targetCollaboration);

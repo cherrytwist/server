@@ -107,8 +107,10 @@ export class ConversionService {
       type: SpaceType.SPACE,
       collaborationData: {},
     };
-    let space =
-      await this.accountService.createSpaceOnAccount(createSpaceInput);
+    let space = await this.accountService.createSpaceOnAccount(
+      createSpaceInput,
+      agentInfo
+    );
 
     space = await this.spaceService.getSpaceOrFail(space.id, {
       relations: {

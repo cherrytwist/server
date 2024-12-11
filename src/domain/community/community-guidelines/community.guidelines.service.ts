@@ -17,6 +17,7 @@ import { IStorageAggregator } from '@domain/storage/storage-aggregator/storage.a
 import { TagsetType } from '@common/enums/tagset.type';
 import { CreateTagsetInput } from '@domain/common/tagset/dto/tagset.dto.create';
 import { AuthorizationPolicyType } from '@common/enums/authorization.policy.type';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class CommunityGuidelinesService {
@@ -28,7 +29,8 @@ export class CommunityGuidelinesService {
 
   async createCommunityGuidelines(
     communityGuidelinesData: CreateCommunityGuidelinesInput,
-    storageAggregator: IStorageAggregator
+    storageAggregator: IStorageAggregator,
+    agentInfo: AgentInfo
   ): Promise<ICommunityGuidelines> {
     const communityGuidelines: ICommunityGuidelines = new CommunityGuidelines();
     communityGuidelines.authorization = new AuthorizationPolicy(
@@ -49,13 +51,15 @@ export class CommunityGuidelinesService {
     communityGuidelines.profile = await this.profileService.createProfile(
       communityGuidelinesData.profile,
       ProfileType.COMMUNITY_GUIDELINES,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
 
     await this.profileService.addVisualsOnProfile(
       communityGuidelines.profile,
       communityGuidelinesData.profile.visuals,
-      [VisualType.CARD]
+      [VisualType.CARD],
+      agentInfo
     );
 
     return communityGuidelines;

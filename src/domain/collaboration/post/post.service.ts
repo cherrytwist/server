@@ -18,6 +18,7 @@ import { RoomType } from '@common/enums/room.type';
 import { TagsetReservedName } from '@common/enums/tagset.reserved.name';
 import { IStorageAggregator } from '@domain/storage/storage-aggregator/storage.aggregator.interface';
 import { AuthorizationPolicyType } from '@common/enums/authorization.policy.type';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class PostService {
@@ -33,25 +34,27 @@ export class PostService {
   public async createPost(
     postInput: CreatePostInput,
     storageAggregator: IStorageAggregator,
-    userID: string
+    agentInfo: AgentInfo
   ): Promise<IPost> {
     const post: IPost = Post.create(postInput);
     post.profile = await this.profileService.createProfile(
       postInput.profileData,
       ProfileType.POST,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
     await this.profileService.addVisualsOnProfile(
       post.profile,
       postInput.profileData.visuals,
-      [VisualType.BANNER, VisualType.CARD]
+      [VisualType.BANNER, VisualType.CARD],
+      agentInfo
     );
     await this.profileService.addTagsetOnProfile(post.profile, {
       name: TagsetReservedName.DEFAULT,
       tags: postInput.tags || [],
     });
     post.authorization = new AuthorizationPolicy(AuthorizationPolicyType.POST);
-    post.createdBy = userID;
+    post.createdBy = agentInfo.userID;
 
     post.comments = await this.roomService.createRoom(
       `post-comments-${post.nameID}`,

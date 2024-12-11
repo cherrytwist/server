@@ -64,6 +64,19 @@ import { AiPersonaEngine } from '@common/enums/ai.persona.engine';
 import { AiPersonaBodyOfKnowledgeType } from '@common/enums/ai.persona.body.of.knowledge.type';
 import { AiPersonaDataAccessMode } from '@common/enums/ai.persona.data.access.mode';
 
+const BootstrapAgent: AgentInfo = {
+  agentID: 'bootstrap',
+  email: 'bootstrap@alkem.io',
+  userID: 'bootstrap',
+  emailVerified: true,
+  firstName: 'bootstrap',
+  lastName: 'system',
+  credentials: [],
+  verifiedCredentials: [],
+  communicationID: 'bootstrap',
+  avatarURL: '',
+};
+
 @Injectable()
 export class BootstrapService {
   constructor(
@@ -234,7 +247,8 @@ export class BootstrapService {
             calloutsData: callouts,
             defaultCalloutGroupName: calloutGroups[0].displayName,
           },
-        }
+        },
+        BootstrapAgent
       );
       // Set the default template
       knowledgeTemplateDefault.template = template;
@@ -312,15 +326,18 @@ export class BootstrapService {
           userData.email
         );
         if (!userExists) {
-          const user = await this.userService.createUser({
-            email: userData.email,
-            accountUpn: userData.email,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            profileData: {
-              displayName: `${userData.firstName} ${userData.lastName}`,
+          const user = await this.userService.createUser(
+            {
+              email: userData.email,
+              accountUpn: userData.email,
+              firstName: userData.firstName,
+              lastName: userData.lastName,
+              profileData: {
+                displayName: `${userData.firstName} ${userData.lastName}`,
+              },
             },
-          });
+            BootstrapAgent
+          );
 
           // Once all is done, reset the user authorizations
           const userAuthorizations =
@@ -518,7 +535,10 @@ export class BootstrapService {
         collaborationData: {},
       };
 
-      const space = await this.accountService.createSpaceOnAccount(spaceInput);
+      const space = await this.accountService.createSpaceOnAccount(
+        spaceInput,
+        BootstrapAgent
+      );
       const spaceAuthorizations =
         await this.spaceAuthorizationService.applyAuthorizationPolicy(space);
       await this.authorizationPolicyService.saveAll(spaceAuthorizations);
@@ -555,16 +575,19 @@ export class BootstrapService {
         await this.organizationService.getAccount(hostOrganization);
 
       // Create the VC
-      const vc = await this.accountService.createVirtualContributorOnAccount({
-        accountID: account.id,
-        aiPersona: {
-          aiPersonaServiceID: aiPersonaService.id,
+      const vc = await this.accountService.createVirtualContributorOnAccount(
+        {
+          accountID: account.id,
+          aiPersona: {
+            aiPersonaServiceID: aiPersonaService.id,
+          },
+          profileData: {
+            displayName: 'Guidance',
+            description: 'Guidance Virtual Contributor',
+          },
         },
-        profileData: {
-          displayName: 'Guidance',
-          description: 'Guidance Virtual Contributor',
-        },
-      });
+        BootstrapAgent
+      );
 
       platform.guidanceVirtualContributor = vc;
       await this.platformService.savePlatform(platform);

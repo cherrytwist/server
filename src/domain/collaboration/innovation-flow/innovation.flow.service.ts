@@ -27,6 +27,7 @@ import { IInnovationFlowState } from '../innovation-flow-states/innovation.flow.
 import { TagsetService } from '@domain/common/tagset/tagset.service';
 import { UpdateInnovationFlowSingleStateInput } from './dto/innovation.flow.dto.update.single.state';
 import { AuthorizationPolicyType } from '@common/enums/authorization.policy.type';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class InnovationFlowService {
@@ -43,7 +44,8 @@ export class InnovationFlowService {
     innovationFlowData: CreateInnovationFlowInput,
     tagsetTemplates: ITagsetTemplate[],
     storageAggregator: IStorageAggregator,
-    isTemplate: boolean = false
+    isTemplate: boolean = false,
+    agentInfo: AgentInfo
   ): Promise<IInnovationFlow> {
     const innovationFlow: IInnovationFlow = new InnovationFlow();
     innovationFlow.authorization = new AuthorizationPolicy(
@@ -83,13 +85,15 @@ export class InnovationFlowService {
     innovationFlow.profile = await this.profileService.createProfile(
       innovationFlowData.profile,
       ProfileType.INNOVATION_FLOW,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
 
     await this.profileService.addVisualsOnProfile(
       innovationFlow.profile,
       innovationFlowData.profile.visuals,
-      [VisualType.CARD]
+      [VisualType.CARD],
+      agentInfo
     );
 
     const convertedStates =

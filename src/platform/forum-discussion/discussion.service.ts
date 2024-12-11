@@ -19,6 +19,7 @@ import { TagsetReservedName } from '@common/enums/tagset.reserved.name';
 import { IStorageAggregator } from '@domain/storage/storage-aggregator/storage.aggregator.interface';
 import { ForumCreateDiscussionInput } from '@platform/forum/dto/forum.dto.create.discussion';
 import { AuthorizationPolicyType } from '@common/enums/authorization.policy.type';
+import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 
 @Injectable()
 export class DiscussionService {
@@ -35,13 +36,15 @@ export class DiscussionService {
     userID: string,
     communicationDisplayName: string,
     roomType: RoomType,
-    storageAggregator: IStorageAggregator
+    storageAggregator: IStorageAggregator,
+    agentInfo: AgentInfo
   ): Promise<IDiscussion> {
     const discussion: IDiscussion = Discussion.create(discussionData);
     discussion.profile = await this.profileService.createProfile(
       discussionData.profile,
       ProfileType.DISCUSSION,
-      storageAggregator
+      storageAggregator,
+      agentInfo
     );
 
     await this.profileService.addTagsetOnProfile(discussion.profile, {

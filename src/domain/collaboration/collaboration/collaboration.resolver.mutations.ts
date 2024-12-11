@@ -84,7 +84,7 @@ export class CollaborationResolverMutations {
     const callout =
       await this.collaborationService.createCalloutOnCollaboration(
         calloutData,
-        agentInfo.userID
+        agentInfo
       );
 
     const { roleSet: communityPolicy, spaceSettings } =
