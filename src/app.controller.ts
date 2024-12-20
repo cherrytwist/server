@@ -1,12 +1,15 @@
 import { RestEndpoint } from '@common/enums/rest.endpoint';
 import { Controller, Get, Inject, LoggerService, Req } from '@nestjs/common';
 import { Request } from 'express';
-import {
-  GeoInformation,
-  GeoLocationService,
-} from '@services/external/geo-location';
+// import {
+//   GeoInformation,
+//   GeoLocationService,
+// } from '@services/external/geo-location/';
+import { GeoInformation } from '@services/external/geo-location/geo.information.js';
+import { GeoLocationService } from '@services/external/geo-location/geo.location.service.js';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { LogContext } from '@common/enums';
+// import { LogContext } from '@common/enums';
+import { LogContext } from '@common/enums/logging.context.js';
 
 @Controller('/rest')
 export class AppController {

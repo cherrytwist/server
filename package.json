@@ -5,10 +5,25 @@
   "author": "Alkemio Foundation",
   "private": false,
   "license": "EUPL-1.2",
-  "main": "src/main.ts",
+  "exports": "src/main.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alkem-io/server.git"
+  },
+  "type": "module",
+  "imports": {
+    "@interfaces/*": "./dist/common/interfaces/*",
+    "@domain/*": "./dist/domain/*",
+    "@config/*": "./dist/config/*",
+    "@common/*": "./dist/common/*",
+    "@core/*": "./dist/core/*",
+    "@platform/*": "./dist/platform/*",
+    "@library/*": "./dist/library/*",
+    "@services/*": "./dist/services/*",
+    "@constants/*": "./dist/common/constants/*",
+    "@templates/*": "./dist/platform/configuration/templates/*",
+    "@src/*": "./dist/*",
+    "@test/*": "./dist/test/*"
   },
   "scripts": {
     "prebuild": "rimraf dist",

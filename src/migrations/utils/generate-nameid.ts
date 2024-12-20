@@ -1,9 +1,10 @@
+import replaceSpecialCharacters from 'replace-special-characters';
+
 export const generateNameID = (
   base: string,
   useRandomSuffix = true,
   length = 12
 ) => {
-  const replaceSpecialCharacters = require('replace-special-characters');
   const nameIDExcludedCharacters = /[^a-zA-Z0-9-]/g;
   let randomSuffix = '';
   if (useRandomSuffix) {

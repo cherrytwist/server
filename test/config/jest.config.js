@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   // Default: false
   // Automatically clear mock calls, instances, contexts and results before every test.
   // Equivalent to calling jest.clearAllMocks() before each test.

@@ -1,5 +1,6 @@
 const env = (prod, dev) => (process.env.NODE_ENV === 'production' ? prod : dev);
-module.exports = {
+
+export default {
   root: true,
   parser: '@typescript-eslint/parser',
   parserOptions: {
