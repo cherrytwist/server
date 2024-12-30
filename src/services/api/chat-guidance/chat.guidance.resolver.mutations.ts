@@ -45,7 +45,6 @@ export class ChatGuidanceResolverMutations {
       AuthorizationPrivilege.ACCESS_INTERACTIVE_GUIDANCE,
       `Access interactive guidance: ${agentInfo.email}`
     );
-
     if (!this.chatGuidanceService.isGuidanceEngineEnabled()) {
       return undefined;
     }

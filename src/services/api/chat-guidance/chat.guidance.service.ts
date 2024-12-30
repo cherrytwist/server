@@ -1,5 +1,3 @@
-import { Inject, LoggerService } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AgentInfo } from '@core/authentication.agent.info/agent.info';
 import { ConfigService } from '@nestjs/config';
 import { ChatGuidanceInput } from './dto/chat.guidance.dto.input';
@@ -17,8 +15,6 @@ import { InvocationOperation } from '@common/enums/ai.persona.invocation.operati
 export class ChatGuidanceService {
   constructor(
     private configService: ConfigService<AlkemioConfig, true>,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER)
-    private readonly logger: LoggerService,
     private aiServerAdapter: AiServerAdapter,
     private communicationAdapter: CommunicationAdapter,
     private roomService: RoomService,

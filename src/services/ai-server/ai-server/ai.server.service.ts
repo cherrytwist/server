@@ -12,9 +12,6 @@ import {
   IAiPersonaService,
 } from '@services/ai-server/ai-persona-service';
 import { AiPersonaServiceService } from '../ai-persona-service/ai.persona.service.service';
-import { AiPersonaEngineAdapter } from '../ai-persona-engine-adapter/ai.persona.engine.adapter';
-import { AiServerIngestAiPersonaServiceInput } from './dto/ai.server.dto.ingest.ai.persona.service';
-import { AiPersonaEngineAdapterInputBase } from '../ai-persona-engine-adapter/dto/ai.persona.engine.adapter.dto.base';
 import {
   CreateAiPersonaServiceInput,
   isInputValidForAction,
@@ -27,8 +24,6 @@ import {
 import { EventBus } from '@nestjs/cqrs';
 import { ConfigService } from '@nestjs/config';
 import { ChromaClient } from 'chromadb';
-import { VcInteractionService } from '@domain/communication/vc-interaction/vc.interaction.service';
-import { CommunicationAdapter } from '@services/adapters/communication-adapter/communication.adapter';
 import {
   InteractionMessage,
   MessageSenderRole,
@@ -75,9 +70,6 @@ export class AiServerService {
     private authorizationPolicyService: AuthorizationPolicyService,
     private aiPersonaServiceService: AiPersonaServiceService,
     private aiPersonaServiceAuthorizationService: AiPersonaServiceAuthorizationService,
-    private aiPersonaEngineAdapter: AiPersonaEngineAdapter,
-    private vcInteractionService: VcInteractionService,
-    private communicationAdapter: CommunicationAdapter,
     private roomService: RoomService,
     private subscriptionPublishService: SubscriptionPublishService,
     private config: ConfigService<AlkemioConfig, true>,
@@ -404,22 +396,6 @@ export class AiServerService {
     }
 
     return authorization;
-  }
-
-  public async ingestAiPersonaService(
-    ingestData: AiServerIngestAiPersonaServiceInput
-  ): Promise<boolean> {
-    const aiPersonaService =
-      await this.aiPersonaServiceService.getAiPersonaServiceOrFail(
-        ingestData.aiPersonaServiceID
-      );
-    const ingestAdapterInput: AiPersonaEngineAdapterInputBase = {
-      engine: aiPersonaService.engine,
-      userID: '',
-    };
-    const result =
-      await this.aiPersonaEngineAdapter.sendIngest(ingestAdapterInput);
-    return result;
   }
 
   public async handleInvokeEngineResult(event: InvokeEngineResult) {

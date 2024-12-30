@@ -1,6 +1,7 @@
 import { LogContext } from '@common/enums';
 import { MutationType } from '@common/enums/subscriptions';
 import { RoomService } from '@domain/communication/room/room.service';
+
 import { VcInteractionService } from '@domain/communication/vc-interaction/vc.interaction.service';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { RoomDetails } from '@services/adapters/ai-server-adapter/dto/ai.server.adapter.dto.invocation';
@@ -8,6 +9,7 @@ import {
   InvokeEngineResponse,
   InvokeEngineResult,
 } from '@services/infrastructure/event-bus/messages/invoke.engine.result';
+
 import { SubscriptionPublishService } from '@services/subscriptions/subscription-service';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -16,6 +18,7 @@ export class RoomControllerService {
   constructor(
     private roomService: RoomService,
     private subscriptionPublishService: SubscriptionPublishService,
+
     private vcInteractionService: VcInteractionService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService
   ) {}
