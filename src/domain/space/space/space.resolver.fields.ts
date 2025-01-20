@@ -101,8 +101,8 @@ export class SpaceResolverFields {
     return loader.load(space.id);
   }
 
-  @AuthorizationAgentPrivilege(AuthorizationPrivilege.READ)
-  @UseGuards(GraphqlGuard)
+  // @AuthorizationAgentPrivilege(AuthorizationPrivilege.READ)
+  // @UseGuards(GraphqlGuard)
   @ResolveField('license', () => ILicense, {
     nullable: false,
     description: 'The License operating on this Space.',
