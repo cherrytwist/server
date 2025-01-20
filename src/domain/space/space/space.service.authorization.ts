@@ -16,7 +16,7 @@ import { ProfileAuthorizationService } from '@domain/common/profile/profile.serv
 import { CollaborationAuthorizationService } from '@domain/collaboration/collaboration/collaboration.service.authorization';
 import { ContextAuthorizationService } from '@domain/context/context/context.service.authorization';
 import { SpacePrivacyMode } from '@common/enums/space.privacy.mode';
-import { CommunityRoleType } from '@common/enums/community.role';
+import { RoleName } from '@common/enums/role.name';
 import {
   POLICY_RULE_SPACE_CREATE_SUBSPACE,
   CREDENTIAL_RULE_SPACE_MEMBERS_READ,
@@ -156,12 +156,6 @@ export class SpaceAuthorizationService {
         break;
       }
     }
-
-    space.authorization = this.appendCredentialRuleSpaceVisibility(
-      credentialCriteriasWithAccessToSpace,
-      isPrivate,
-      space.authorization
-    );
 
     let spaceMembershipAllowed = true;
     // Extend rules depending on the Visibility
@@ -303,7 +297,7 @@ export class SpaceAuthorizationService {
       // Otherwise, return the parent space’s MEMBER credentials.
       return this.roleSetService.getCredentialsForRole(
         parentSpace.community.roleSet,
-        CommunityRoleType.MEMBER,
+        RoleName.MEMBER,
         parentSpace.settings
       );
     }
@@ -343,7 +337,7 @@ export class SpaceAuthorizationService {
         // ParentSpace is public, but grandparent is private ⇒ challenge members
         return this.roleSetService.getCredentialsForRoleWithParents(
           parentSpace.community.roleSet,
-          CommunityRoleType.MEMBER,
+          RoleName.MEMBER,
           parentSpace.settings
         );
       }
@@ -351,7 +345,7 @@ export class SpaceAuthorizationService {
       // ParentSpace is private ⇒ challenge members
       return this.roleSetService.getCredentialsForRole(
         parentSpace.community.roleSet,
-        CommunityRoleType.MEMBER,
+        RoleName.MEMBER,
         parentSpace.settings
       );
     }
@@ -523,7 +517,7 @@ export class SpaceAuthorizationService {
         const parentRoleSetMemberCredentials =
           await this.roleSetService.getCredentialsForRoleWithParents(
             parentSpaceRoleSet,
-            CommunityRoleType.MEMBER,
+            RoleName.MEMBER,
             spaceSettings
           );
         const readAboutSubspaces =
@@ -589,7 +583,7 @@ export class SpaceAuthorizationService {
       const parentRoleSetAdminCredentials =
         await this.roleSetService.getCredentialsForRole(
           parentSpaceRoleSet,
-          CommunityRoleType.ADMIN,
+          RoleName.ADMIN,
           spaceSettings
         );
 
@@ -607,7 +601,7 @@ export class SpaceAuthorizationService {
 
     const memberCriterias = await this.roleSetService.getCredentialsForRole(
       roleSet,
-      CommunityRoleType.MEMBER,
+      RoleName.MEMBER,
       spaceSettings
     );
     const spaceMember = this.authorizationPolicyService.createCredentialRule(
@@ -620,7 +614,7 @@ export class SpaceAuthorizationService {
     const spaceAdminCriterias =
       await this.roleSetService.getCredentialsForRoleWithParents(
         roleSet,
-        CommunityRoleType.ADMIN,
+        RoleName.ADMIN,
         spaceSettings
       );
     const spaceAdmin = this.authorizationPolicyService.createCredentialRule(
@@ -666,7 +660,7 @@ export class SpaceAuthorizationService {
   ): Promise<ICredentialDefinition[]> {
     const memberCriteria = await this.roleSetService.getCredentialsForRole(
       roleSet,
-      CommunityRoleType.MEMBER,
+      RoleName.MEMBER,
       spaceSettings
     );
     const collaborationSettings = spaceSettings.collaboration;
@@ -677,7 +671,7 @@ export class SpaceAuthorizationService {
       const parentCredential =
         await this.roleSetService.getDirectParentCredentialForRole(
           roleSet,
-          CommunityRoleType.MEMBER
+          RoleName.MEMBER
         );
       if (parentCredential) memberCriteria.push(parentCredential);
     }
