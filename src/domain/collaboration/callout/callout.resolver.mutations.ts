@@ -259,12 +259,29 @@ export class CalloutResolverMutations {
         );
 
       if (contributionData.post && contribution.post) {
+        const post = await this.calloutContributionService.getPost(
+          contribution,
+          {
+            post: {
+              authorization: true,
+              profile: true,
+              comments: true,
+            },
+          }
+        );
+        if (!post) {
+          throw new RelationshipNotFoundException(
+            `Unable to find post for callout contribution: ${contribution.id}`,
+            LogContext.COLLABORATION
+          );
+        }
+
         const postCreatedEvent: CalloutPostCreatedPayload = {
           eventID: `callout-post-created-${Math.round(Math.random() * 100)}`,
           calloutID: callout.id,
           contributionID: contribution.id,
           sortOrder: contribution.sortOrder,
-          post: contribution.post,
+          post,
         };
         await this.postCreatedSubscription.publish(
           SubscriptionType.CALLOUT_POST_CREATED,
