@@ -243,7 +243,7 @@ export class LookupResolverFields {
     this.authorizationService.grantAccessOrFail(
       agentInfo,
       user.authorization,
-      AuthorizationPrivilege.READ,
+      AuthorizationPrivilege.READ_USERS,
       `lookup User: ${user.id}`
     );
     return user;
