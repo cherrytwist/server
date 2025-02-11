@@ -28,7 +28,8 @@ export class LicensingWingbackSubscriptionService {
   /**
    * Create a new customer
    * @param data
-   * @throws {Error} if the request fails
+   * @throws {WingbackCustomerNotCreated} if the request fails
+   * @throws {Error} If Wingback is disabled or some other general error
    */
   public createCustomer(
     data: CreateWingbackCustomer
