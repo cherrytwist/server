@@ -1,21 +1,18 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { IAuthorizable } from '@domain/common/entity/authorizable-entity';
-import { IEcosystemModel } from '@domain/context/ecosystem-model/ecosystem-model.interface';
 import { Markdown } from '@domain/common/scalars/scalar.markdown';
+import { IProfile } from '@domain/common/profile/profile.interface';
 
-@ObjectType('Context')
-export abstract class IContext extends IAuthorizable {
+@ObjectType('SpaceAbout')
+export abstract class ISpaceAbout extends IAuthorizable {
+  // exposed through a field resolver
+  profile!: IProfile;
+
   @Field(() => Markdown, {
     nullable: true,
     description: 'The goal that is being pursued',
   })
-  vision?: string;
-
-  @Field(() => Markdown, {
-    nullable: true,
-    description: 'What is the potential impact?',
-  })
-  impact?: string;
+  why?: string;
 
   @Field(() => Markdown, {
     nullable: true,
@@ -23,5 +20,9 @@ export abstract class IContext extends IAuthorizable {
   })
   who?: string;
 
-  ecosystemModel?: IEcosystemModel;
+  @Field(() => Markdown, {
+    nullable: true,
+    description: 'When is this happening?',
+  })
+  when?: string;
 }
